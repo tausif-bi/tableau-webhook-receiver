@@ -1,6 +1,7 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, redirect
 import logging
 from datetime import datetime
+import urllib.parse
 
 # Configure logging
 logging.basicConfig(
@@ -23,26 +24,28 @@ def tableau_webhook():
         # Log the received parameters
         logging.info(f"Received Tableau request with parameters: {params}")
         
-        # Extract specific parameters (customize based on your needs)
-        sheet_name = params.get('sheet_name', 'Not provided')
-        filter_name = params.get('filter_name', 'Not provided')
+        # Extract specific parameters
+        sheet_name = params.get('sheetname', 'Not provided')
+        region = params.get('region', 'Not provided')
         
         # Log the extracted information
         logging.info(f"Sheet Name: {sheet_name}")
-        logging.info(f"Filter Name: {filter_name}")
+        logging.info(f"Region: {region}")
         
-        # You can add your custom processing logic here
-        # For example, storing in a database, triggering other actions, etc.
+        # Construct the Tableau PDF URL
+        base_url = "https://prod-apsoutheast-b.online.tableau.com/#/site/tausifkhan786-e219ba6206/views/pdftest/Overview.pdf"
         
-        return jsonify({
-            'status': 'success',
-            'message': 'Parameters received successfully',
-            'data': {
-                'sheet_name': sheet_name,
-                'filter_name': filter_name,
-                'timestamp': datetime.now().isoformat()
-            }
-        }), 200
+        # URL encode the region parameter
+        encoded_region = urllib.parse.quote(region)
+        
+        # Construct the final URL with the region parameter
+        final_url = f"{base_url}?Region={encoded_region}"
+        
+        # Log the redirect URL
+        logging.info(f"Redirecting to: {final_url}")
+        
+        # Redirect to the Tableau PDF URL
+        return redirect(final_url)
         
     except Exception as e:
         logging.error(f"Error processing request: {str(e)}")
